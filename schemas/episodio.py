@@ -6,17 +6,20 @@ from model.episodio import Episodio
 class EpisodioSchema(BaseModel):
     """Define como um novo episódio a ser inserido deve ser representado"""
 
-    titulo: str = "NerdCast 961 - Qual é a pauta? O que você procura está aqui!"
-    descricao: str = (
-        "Projeto Velho Gostoso, nostalgia e o que seu algoritmo diz sobre você"
-    )
-    capa: str = (
-        "https://uploads.jovemnerd.com.br/wp-content/uploads/2024/12/nc961_sem_pauta_24_3000x3000px__56k6wcp0.jpg"
-    )
-    audio: str = (
-        "https://chrt.fm/track/GD6D57/https://nerdcast.jovemnerd.com.br/nerdcast_961_sempauta.mp3"
-    )
-    duracao: int = 7632
+    titulo: str
+    descricao: str
+    capa: str
+    audio: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "titulo": "NerdCast 961 - Qual é a pauta?",
+                "descricao": "Projeto Velho Gostoso, nostalgia e o que seu algoritmo diz sobre você",
+                "capa": "https://example.com/image.jpg",
+                "audio": "https://example.com/audio.mp3",
+            }
+        }
 
 
 class EpisodioDelSchema(BaseModel):
@@ -42,7 +45,6 @@ class EpisodioViewSchema(BaseModel):
     audio: str = (
         "https://chrt.fm/track/GD6D57/https://nerdcast.jovemnerd.com.br/nerdcast_961_sempauta.mp3"
     )
-    duracao: int = 7632
 
 
 class EpisodioPath(BaseModel):
@@ -59,7 +61,6 @@ def apresenta_episodio(episodio: Episodio):
         "descricao": episodio.descricao,
         "capa": episodio.capa,
         "audio": episodio.audio,
-        "duracao": episodio.duracao,
     }
 
 
@@ -76,7 +77,6 @@ def apresenta_episodios(episodios: List[Episodio]):
                 "descricao": episodio.descricao,
                 "capa": episodio.capa,
                 "audio": episodio.audio,
-                "duracao": episodio.duracao,
             }
         )
 

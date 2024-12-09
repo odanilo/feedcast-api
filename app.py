@@ -52,7 +52,6 @@ def add_episodio(form: EpisodioSchema):
         audio=form.audio,
         capa=form.capa,
         descricao=form.descricao,
-        duracao=form.duracao,
     )
 
     logger.debug("Adicionando episódio de título: %s", episodio.titulo)
@@ -217,7 +216,6 @@ def update_episodio(path: EpisodioPath, form: EpisodioSchema):
         episodio.audio = form.audio
         episodio.capa = form.capa
         episodio.descricao = form.descricao
-        episodio.duracao = form.duracao
 
         session.commit()
 

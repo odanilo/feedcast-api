@@ -12,7 +12,6 @@ class Episodio(Base):
     audio = Column(String(500))
     capa = Column(String(500))
     descricao = Column(String(500))
-    duracao = Column(Integer)
 
     def __init__(
         self,
@@ -20,7 +19,6 @@ class Episodio(Base):
         audio: str,
         capa: str,
         descricao: str,
-        duracao: int,
         data_insercao: Union[DateTime, None] = None,
     ):
         """
@@ -31,13 +29,11 @@ class Episodio(Base):
             audio: link para o arquivo de áudio daquele episódio
             capa: link para o arquivo da capa daquele episódio
             descrição: descrição do episódio
-            duração: duracao do episódio
             data_insercao: data de quando o produto foi inserido à base
         """
         self.audio = audio
         self.capa = capa
         self.descricao = descricao
-        self.duracao = duracao
         self.titulo = titulo
 
         # se não for informada, será o data exata da inserção no banco
