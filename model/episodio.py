@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, func
 from typing import Union
 
 from model import Base
@@ -12,6 +12,7 @@ class Episodio(Base):
     audio = Column(String(500))
     capa = Column(String(500))
     descricao = Column(String(500))
+    data_insercao = Column(DateTime, default=func.now())
 
     def __init__(
         self,

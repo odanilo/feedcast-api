@@ -132,7 +132,7 @@ def list_episodios():
     # criando conexão com a base
     session = Session()
     # fazendo a busca
-    episodios = session.query(Episodio).all()
+    episodios = session.query(Episodio).order_by(Episodio.data_insercao.desc()).all()
 
     if not episodios:
         # se não há episodios cadastrados
