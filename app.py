@@ -18,6 +18,7 @@ from schemas.episodio import (
     apresenta_episodios,
 )
 from schemas.error import ErrorSchema
+from schemas.importacao import ImportacaoFeedSchema
 from schemas.profile import ProfileSchema, apresenta_profile, ProfileDelSchema
 
 info = Info(title="Poscast API", version="1.0.0")
@@ -36,6 +37,10 @@ episodio_tag = Tag(
 profile_tag = Tag(
     name="Profile",
     description="Adição, visualização e deleção do profile do podcast",
+)
+importacao_tag = Tag(
+    name="Importação",
+    description="Importação de profile e episódios via feed rss do podcast",
 )
 
 
@@ -270,7 +275,7 @@ def add_profile(form: ProfileSchema):
         # criando conexão com a base
         session = Session()
 
-        if (session.query(Profile).count() > 0):
+        if session.query(Profile).count() > 0:
             error_msg = "Não é permitido criar mais de um profile"
             return {"mesage": error_msg}, 405
 
@@ -306,8 +311,7 @@ def add_profile(form: ProfileSchema):
     responses={"200": ProfileSchema, "404": ErrorSchema},
 )
 def get_profile():
-    """Retorna o profile cadastrado.
-    """
+    """Retorna o profile cadastrado."""
     logger.debug("Buscando profile")
 
     # criando conexão com a base
@@ -368,3 +372,94 @@ def delete_profile():
         logger.warning("Erro ao deletar profile %s, %s", profile.nome, error_msg)
 
         return {"mesage": error_msg}, 400
+
+
+@app.post(
+    "/importacoes/feed-rss",
+    tags=[importacao_tag],
+    responses={"200": None, "409": ErrorSchema, "400": ErrorSchema},
+)
+def importar_rss(form: ImportacaoFeedSchema):
+    rss_feed_url = form.feed
+
+    session = Session()
+
+    erros_encontrados = []
+
+    try:
+        feed = feedparser.parse(rss_feed_url)
+
+        if not feed or "title" not in feed.feed:
+            return {"message": "Feed RSS inválido ou inacessível"}, 400
+
+        profile = Profile(
+            nome=feed.channel.title,
+            autor=feed.channel.author,
+            descricao=feed.channel.summary,
+            capa=feed.channel.image.href,
+        )
+
+        if session.query(Profile).count() == 0:
+            try:
+                # adidiconando profile
+                session.add(profile)
+                # efetivando o comando de adição de novo item na tabela
+                session.commit()
+
+                logger.debug("Adicionado profile de nome: %s", profile.nome)
+
+            except IntegrityError:
+                # como a duplicidade do nome é a provável razão do IntegrityError
+                error_msg = "Profile com mesmo nome já salvo na base"
+
+                logger.warning(
+                    "Erro ao adicionar profile %s, %s", profile.nome, error_msg
+                )
+
+                erros_encontrados.append({"mesage": error_msg})
+
+            except Exception:
+                # caso um erro fora do previsto
+                error_msg = "Não foi possível salvar o profile"
+
+                logger.warning(
+                    "Erro ao adicionar profile %s, %s", profile.nome, error_msg
+                )
+
+                erros_encontrados.append({"mesage": error_msg})
+
+        episodios_no_feed = []
+
+        # Fixando a importação em 10 até desenvolvimento de paginação e player
+        for entry in feed.entries[:10]:
+            try:
+                session.query(Episodio).filter_by(titulo=entry.title).one()
+                erros_encontrados.append(
+                    {"mesage": f"Episódio com título '{entry.title}' já existe"}
+                )
+
+            except NoResultFound:
+                episodio = Episodio(
+                    titulo=entry.title,
+                    descricao=entry.summary,
+                    capa=getattr(entry, "image", {}).get("href", ""),
+                    audio=entry.links[1].href if len(entry.links) > 1 else "",
+                )
+
+                episodios_no_feed.append(episodio)
+
+        session.add_all(episodios_no_feed)
+        session.commit()
+
+        return {
+            "perfil": apresenta_profile(profile) if profile.data_insercao else {},
+            "episodios": (
+                apresenta_episodios(episodios_no_feed).get("episodios", [])
+                if episodios_no_feed
+                else []
+            ),
+            "erros": erros_encontrados,
+        }, 200
+
+    except Exception as e:
+        return {"message": "Erro ao processar o feed RSS", "error": str(e)}, 400
