@@ -6,6 +6,7 @@ import os
 # importando os elementos definidos no modelo
 from model.base import Base
 from model.episodio import Episodio
+from model.profile import Profile
 
 db_path = "database/"
 # Verifica se o diretorio não existe
