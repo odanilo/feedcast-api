@@ -1,10 +1,12 @@
+import feedparser
+
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
 from flask_cors import CORS
 
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from model import Session, Episodio
+from model import Session, Episodio, Profile
 from logger import logger
 
 from schemas.episodio import (
@@ -16,6 +18,7 @@ from schemas.episodio import (
     apresenta_episodios,
 )
 from schemas.error import ErrorSchema
+from schemas.profile import ProfileSchema, apresenta_profile, ProfileDelSchema
 
 info = Info(title="Poscast API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
@@ -29,6 +32,10 @@ home_tag = Tag(
 episodio_tag = Tag(
     name="Episódio",
     description="Adição, visualização e remoção de episódios de podcast à base",
+)
+profile_tag = Tag(
+    name="Profile",
+    description="Adição, visualização e deleção do profile do podcast",
 )
 
 
@@ -127,7 +134,7 @@ def list_episodios():
     """Faz a busca por todos os Episodio cadastrados
     Retorna uma representação da listagem de episódios.
     """
-    logger.debug(f"Buscando episódios")
+    logger.debug("Buscando episódios")
 
     # criando conexão com a base
     session = Session()
@@ -142,6 +149,7 @@ def list_episodios():
         # retorna a representação de produto
         print(episodios)
         return apresenta_episodios(episodios), 200
+
 
 @app.delete(
     "/episodios/<int:episodio_id>",
@@ -229,6 +237,134 @@ def update_episodio(path: EpisodioPath, form: EpisodioSchema):
         error_msg = f"Erro ao atualizar episódio com id {episodio_id}: {str(e)}"
         logger.error(error_msg)
         return {"message": error_msg}, 400
-    
+
     finally:
         session.close()
+
+
+## PROFILE
+@app.post(
+    "/profile",
+    tags=[profile_tag],
+    responses={
+        "200": ProfileSchema,
+        "409": ErrorSchema,
+        "400": ErrorSchema,
+        "405": ErrorSchema,
+    },
+)
+def add_profile(form: ProfileSchema):
+    """Adiciona um novo Profile à base de dados
+    Retorna uma representação do profile
+    """
+    profile = Profile(
+        nome=form.nome,
+        autor=form.autor,
+        descricao=form.descricao,
+        capa=form.capa,
+    )
+
+    logger.debug("Adicionando profile do podcast: %s", profile.nome)
+
+    try:
+        # criando conexão com a base
+        session = Session()
+
+        if (session.query(Profile).count() > 0):
+            error_msg = "Não é permitido criar mais de um profile"
+            return {"mesage": error_msg}, 405
+
+        # adidiconando profile
+        session.add(profile)
+        # efetivando o comando de adição de novo item na tabela
+        session.commit()
+
+        logger.debug("Adicionado profile de nome: %s", profile.nome)
+
+        return apresenta_profile(profile), 200
+
+    except IntegrityError:
+        # como a duplicidade do nome é a provável razão do IntegrityError
+        error_msg = "Profile com mesmo nome já salvo na base"
+
+        logger.warning("Erro ao adicionar profile %s, %s", profile.nome, error_msg)
+
+        return {"mesage": error_msg}, 409
+
+    except Exception:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível salvar o profile"
+
+        logger.warning("Erro ao adicionar profile %s, %s", profile.nome, error_msg)
+
+        return {"mesage": error_msg}, 400
+
+
+@app.get(
+    "/profile",
+    tags=[profile_tag],
+    responses={"200": ProfileSchema, "404": ErrorSchema},
+)
+def get_profile():
+    """Retorna o profile cadastrado.
+    """
+    logger.debug("Buscando profile")
+
+    # criando conexão com a base
+    session = Session()
+    # fazendo a busca
+    profile = session.query(Profile).first()
+
+    if not profile:
+        # se não há profile cadastrado
+        return {}, 200
+
+    logger.debug("%d profile econtrado", profile)
+    # retorna a representação de produto
+    print(profile)
+    return apresenta_profile(profile), 200
+
+
+@app.delete(
+    "/profile",
+    tags=[profile_tag],
+    responses={"200": ProfileDelSchema, "404": ErrorSchema},
+)
+def delete_profile():
+    """
+    Deleta o profile
+    Retorna uma mensagem de confirmação da remoção
+    """
+    try:
+        # criando conexão com a base
+        session = Session()
+
+        logger.debug("Deletando profile")
+
+        # buscando profile
+        profile = session.query(Profile).first()
+
+        if not profile:
+            error_msg = "Nenhum profile encontrado para deletar"
+
+            logger.warning("Erro ao deletar profile: %s", error_msg)
+
+            return {"message": error_msg}, 404
+
+        nome = profile.nome
+
+        # deletando profile
+        session.delete(profile)
+        session.commit()
+
+        logger.debug("Deletado profile %s", nome)
+
+        return {"message": "Profile removido", "id": profile.id, "nome": profile.nome}
+
+    except Exception:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível deletar o profile"
+
+        logger.warning("Erro ao deletar profile %s, %s", profile.nome, error_msg)
+
+        return {"mesage": error_msg}, 400

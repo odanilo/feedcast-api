@@ -1,5 +1,6 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from model.episodio import Episodio
 
 
@@ -45,6 +46,7 @@ class EpisodioViewSchema(BaseModel):
     audio: str = (
         "https://chrt.fm/track/GD6D57/https://nerdcast.jovemnerd.com.br/nerdcast_961_sempauta.mp3"
     )
+    data_insercao: Optional[datetime] = None
 
 
 class EpisodioPath(BaseModel):
@@ -61,6 +63,7 @@ def apresenta_episodio(episodio: Episodio):
         "descricao": episodio.descricao,
         "capa": episodio.capa,
         "audio": episodio.audio,
+        "data_insercao": episodio.data_insercao.isoformat() + "Z",
     }
 
 
@@ -77,6 +80,7 @@ def apresenta_episodios(episodios: List[Episodio]):
                 "descricao": episodio.descricao,
                 "capa": episodio.capa,
                 "audio": episodio.audio,
+                "data_insercao": episodio.data_insercao.isoformat() + "Z",
             }
         )
 
