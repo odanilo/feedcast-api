@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 from model.profile import Profile
@@ -9,7 +10,7 @@ class ProfileSchema(BaseModel):
     nome: str
     autor: str
     descricao: str
-    capa: str
+    capa: Optional[str]
 
     class Config:
         schema_extra = {

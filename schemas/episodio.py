@@ -9,7 +9,7 @@ class EpisodioSchema(BaseModel):
 
     titulo: str
     descricao: str
-    capa: str
+    capa: Optional[str]
     audio: str
 
     class Config:
@@ -40,7 +40,7 @@ class EpisodioViewSchema(BaseModel):
     descricao: str = (
         "Projeto Velho Gostoso, nostalgia e o que seu algoritmo diz sobre você"
     )
-    capa: str = (
+    capa: Optional[str] = (
         "https://uploads.jovemnerd.com.br/wp-content/uploads/2024/12/nc961_sem_pauta_24_3000x3000px__56k6wcp0.jpg"
     )
     audio: str = (
