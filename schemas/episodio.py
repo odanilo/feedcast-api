@@ -5,7 +5,7 @@ from model.episodio import Episodio
 
 
 class EpisodioSchema(BaseModel):
-    """Define como um novo episódio a ser inserido deve ser representado"""
+    """Define como um novo Episodio a ser inserido deve ser representado"""
 
     titulo: str
     descricao: str
@@ -25,7 +25,7 @@ class EpisodioSchema(BaseModel):
 
 class EpisodioDelSchema(BaseModel):
     """Define como deve ser a estrutura do dado retornado após uma requisição
-    de remoção.
+    de remoção de um Episodio.
     """
 
     mesage: str
@@ -33,7 +33,7 @@ class EpisodioDelSchema(BaseModel):
 
 
 class EpisodioViewSchema(BaseModel):
-    """Define como um episódio será retornado"""
+    """Define como um Episodio será retornado"""
 
     id: int = 1
     titulo: str = "NerdCast 961 - Qual é a pauta? O que você procura está aqui!"
@@ -50,13 +50,13 @@ class EpisodioViewSchema(BaseModel):
 
 
 class EpisodioPath(BaseModel):
-    """Define o parâmetro das rotas de episódio que possuem ID"""
+    """Define o parâmetro das rotas de Episodio que exigem um ID"""
 
     episodio_id: int = Field(..., description="Episódio ID")
 
 
 def apresenta_episodio(episodio: Episodio):
-    """Retorna uma representação do episódio seguindo o schema definido em EpisodioSchema."""
+    """Retorna uma representação do Episodio seguindo o schema definido em EpisodioSchema."""
     return {
         "id": episodio.id,
         "titulo": episodio.titulo,
@@ -68,7 +68,7 @@ def apresenta_episodio(episodio: Episodio):
 
 
 def apresenta_episodios(episodios: List[Episodio]):
-    """Retorna uma representação do episodio seguindo o schema definido em
+    """Retorna uma representação do Episodio seguindo o schema definido em
     EpisodioViewSchema.
     """
     result = []

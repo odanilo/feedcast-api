@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from typing import Optional
 from pydantic import BaseModel
 
@@ -23,6 +25,19 @@ class ProfileSchema(BaseModel):
         }
 
 
+class ProfileViewSchema(BaseModel):
+    """Define como um Profile será retornado"""
+
+    id: int = 1
+    nome: str = "NerdCast"
+    autor: str = "Jovem Nerd"
+    descricao: str = "O mundo vira piada no Jovem Nerd"
+    capa: Optional[str] = (
+        "https://jovemnerd.com.br/wp-content/themes/jovem-nerd-v9/assets/images/nc-feed.jpg"
+    )
+    data_insercao: Optional[datetime] = None
+
+
 class ProfileDelSchema(BaseModel):
     """Define como deve ser a estrutura do dado retornado após uma requisição
     de remoção.
@@ -33,7 +48,7 @@ class ProfileDelSchema(BaseModel):
 
 
 def apresenta_profile(profile: Profile):
-    """Retorna uma representação do profile seguindo o schema definido em ProfileSchema."""
+    """Retorna uma representação do Profile seguindo o schema definido em ProfileSchema."""
     return {
         "id": profile.id,
         "nome": profile.nome,

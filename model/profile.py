@@ -30,7 +30,7 @@ class Profile(Base):
             autor: nome do autor do podcast
             descrição: descrição do podcast
             capa: capa do episódio
-            data_insercao: data de quando o produto foi inserido à base
+            data_insercao: data de quando o Profile foi inserido à base
         """
         self.nome = nome
         self.autor = autor
