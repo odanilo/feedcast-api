@@ -100,7 +100,7 @@ def add_episodio(form: EpisodioSchema):
 
         logger.warning("Erro ao adicionar episódio %s, %s", episodio.titulo, error_msg)
 
-        return {"mesage": error_msg}, 409
+        return {"message": error_msg}, 409
 
     except Exception:
         # caso um erro fora do previsto
@@ -108,7 +108,7 @@ def add_episodio(form: EpisodioSchema):
 
         logger.warning("Erro ao adicionar episódio %s, %s", episodio.titulo, error_msg)
 
-        return {"mesage": error_msg}, 400
+        return {"message": error_msg}, 400
 
 
 @app.get(
@@ -150,7 +150,7 @@ def get_episodio(path: EpisodioPath):
 
         logger.warning("Erro ao buscar episódio com ID %s, %s", episodio_id, error_msg)
 
-        return {"mesage": error_msg}, 400
+        return {"message": error_msg}, 400
 
 
 @app.get(
@@ -223,7 +223,7 @@ def delete_episodio(path: EpisodioPath):
 
         logger.warning("Erro ao deletar episódio com ID %s, %s", episodio_id, error_msg)
 
-        return {"mesage": error_msg}, 400
+        return {"message": error_msg}, 400
 
 
 @app.put(
@@ -304,7 +304,7 @@ def add_profile(form: ProfileSchema):
         # verifica se já existe um perfil cadastrado, é limitado a 1
         if session.query(Profile).count() > 0:
             error_msg = "Não é permitido criar mais de um profile"
-            return {"mesage": error_msg}, 405
+            return {"message": error_msg}, 405
 
         # adidiconando profile
         session.add(profile)
@@ -321,7 +321,7 @@ def add_profile(form: ProfileSchema):
 
         logger.warning("Erro ao adicionar profile %s, %s", profile.nome, error_msg)
 
-        return {"mesage": error_msg}, 400
+        return {"message": error_msg}, 400
 
 
 @app.get(
@@ -394,7 +394,7 @@ def delete_profile():
 
         logger.warning("Erro ao deletar profile %s, %s", profile.nome, error_msg)
 
-        return {"mesage": error_msg}, 400
+        return {"message": error_msg}, 400
 
 
 @app.post(
@@ -444,7 +444,7 @@ def importar_rss(form: ImportacaoFeedSchema):
                     "Erro ao adicionar profile %s, %s", profile.nome, error_msg
                 )
 
-                erros_encontrados.append({"mesage": error_msg})
+                erros_encontrados.append({"message": error_msg})
 
         # inicia uma lista para salvar todos os Episodio na base
         episodios_no_feed = []
@@ -458,7 +458,7 @@ def importar_rss(form: ImportacaoFeedSchema):
                 # se ja existir um episódio com titulo, não adiciona na lista
                 # e também joga o erro para a lista específica
                 erros_encontrados.append(
-                    {"mesage": f"Episódio com título '{entry.title}' já existe"}
+                    {"message": f"Episódio com título '{entry.title}' já existe"}
                 )
 
             except NoResultFound:
